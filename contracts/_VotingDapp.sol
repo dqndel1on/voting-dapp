@@ -2,10 +2,10 @@
 pragma solidity ^0.8.10;
 
 contract VotingDapp {
-    uint256 totalVotes=0;
-    uint256 totalCandidates=0;
-    bool electionStarted=false;
-    address manager;
+    uint256 public totalVotes=0;
+    uint256 public totalCandidates=0;
+    bool public electionStarted=false;
+    address public manager;
 
     struct Candidate {
         string candidateName;
