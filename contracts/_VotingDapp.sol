@@ -2,10 +2,11 @@
 pragma solidity ^0.8.10;
 
 contract VotingDapp {
-    uint256 public totalVotes=0;
-    uint256 public totalCandidates=0;
-    bool public electionStarted=false;
-    address public manager;
+    uint256 totalVotes=0;
+    uint256 totalCandidates=0;
+    bool electionStarted=false;
+    address manager;
+    string winner;
 
     struct Candidate {
         string candidateName;
@@ -20,8 +21,8 @@ contract VotingDapp {
         _;
     }
 
-    modifier isElectionActive(bool _value) {
-        require(electionStarted == _value);
+    modifier isElectionActive() {
+        require(electionStarted == true);
         _;
     }
 
@@ -33,13 +34,22 @@ contract VotingDapp {
 
     function endElection() external isManager{
         // end election. The election should be active. Only manager can end election.
+        electionStarted = false;
+        manager = address(0);
+        totalCandidates = 0;
+        delete Candidates;
     }
 
-    function becomeCandidate() external {
+    function becomeCandidate(string calldata _name, uint256 _age, uint256 _votes) external {
         // register as candidate. The election should not be active.
+        Candidates.push(Candidate({
+            candidateName: _name,
+            candidateAge: _age,
+            totalVotes: _votes
+        }));
     }
 
-    function vote() external {
+    function vote() external isElectionActive{
         // vote candidate. The election should be active.
     }
 
