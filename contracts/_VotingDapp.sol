@@ -40,24 +40,38 @@ contract VotingDapp {
         delete Candidates;
     }
 
-    function becomeCandidate(string calldata _name, uint256 _age, uint256 _votes) external {
+    function becomeCandidate(string calldata _name, uint256 _age) external {
         // register as candidate. The election should not be active.
         Candidates.push(Candidate({
             candidateName: _name,
             candidateAge: _age,
-            totalVotes: _votes
+            totalVotes: 0
         }));
     }
 
-    function vote() external isElectionActive{
+    function vote(uint256 _index) external isElectionActive{
         // vote candidate. The election should be active.
+        Candidates[_index].totalVotes = Candidates[_index].totalVotes + 1;
     }
 
-    function currentStatus() external {
+    function currentStatus(uint256 _index) view external returns(string memory _candidateName,uint256 _totalVotes) {
         // get total number of votes of each candidate at the moment. The election should be active. Anyone can see current status.
+        Candidate storage candidate = Candidates[_index];
+        return (candidate.candidateName,candidate.totalVotes);
     }
 
-    function getResult() external {
+    function getResult() view external returns(string memory _candidateName,uint256 _totalVotes){
         // get winner of the election. The election should not be active. Anyone can see the result.
+        uint256 i=0;
+        uint256 leader=0;
+        uint256 leaderIndex=0;
+        for (i=0; i<=totalCandidates; i++){
+            if(Candidates[i].totalVotes >=leader){
+            leader = Candidates[i].totalVotes;
+            leaderIndex = i;
+            }
+        }
+        Candidate storage candidate = Candidates[leaderIndex];
+        return (candidate.candidateName,candidate.totalVotes);
     }
 }
