@@ -2,11 +2,11 @@
 pragma solidity ^0.8.10;
 
 contract VotingDapp {
-    uint256 totalVotes=0;
-    uint256 totalCandidates=0;
-    bool electionStarted=false;
-    address manager;
-    string winner;
+    uint256 public totalVotes=0;
+    uint256 public totalCandidates=0;
+    bool public electionStarted=false;
+    address public manager;
+    string public winner;
 
     struct Candidate {
         string candidateName;
@@ -27,7 +27,7 @@ contract VotingDapp {
     }
 
     function startElection() external {
-        // start election. The election should not be active.
+        // start election. The election should not be active. The person who starts election is the manager.
         electionStarted = true;
         manager = msg.sender;
     }
@@ -37,6 +37,7 @@ contract VotingDapp {
         electionStarted = false;
         manager = address(0);
         totalCandidates = 0;
+        totalVotes = 0;
         delete Candidates;
     }
 
@@ -47,11 +48,17 @@ contract VotingDapp {
             candidateAge: _age,
             totalVotes: 0
         }));
+        totalCandidates = totalCandidates + 1;
+    }
+    function getCandidate(uint256 _index) view external returns(string memory _name,uint256 _age){
+        Candidate storage candidate = Candidates[_index];
+        return (candidate.candidateName,candidate.candidateAge);
     }
 
     function vote(uint256 _index) external isElectionActive{
         // vote candidate. The election should be active.
         Candidates[_index].totalVotes = Candidates[_index].totalVotes + 1;
+        totalVotes = totalVotes + 1;
     }
 
     function currentStatus(uint256 _index) view external returns(string memory _candidateName,uint256 _totalVotes) {
@@ -60,7 +67,7 @@ contract VotingDapp {
         return (candidate.candidateName,candidate.totalVotes);
     }
 
-    function getResult() view external returns(string memory _candidateName,uint256 _totalVotes){
+    function getResult() external returns(string memory _candidateName,uint256 _totalVotes){
         // get winner of the election. The election should not be active. Anyone can see the result.
         uint256 i=0;
         uint256 leader=0;
@@ -72,6 +79,7 @@ contract VotingDapp {
             }
         }
         Candidate storage candidate = Candidates[leaderIndex];
+        winner = candidate.candidateName;
         return (candidate.candidateName,candidate.totalVotes);
     }
 }
