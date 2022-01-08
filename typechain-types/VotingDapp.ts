@@ -25,13 +25,14 @@ export interface VotingDappInterface extends utils.Interface {
     "electionStarted()": FunctionFragment;
     "endElection()": FunctionFragment;
     "getCandidate(uint256)": FunctionFragment;
-    "getResult()": FunctionFragment;
     "manager()": FunctionFragment;
     "startElection()": FunctionFragment;
     "totalCandidates()": FunctionFragment;
     "totalVotes()": FunctionFragment;
     "vote(uint256)": FunctionFragment;
     "winner()": FunctionFragment;
+    "winnerName()": FunctionFragment;
+    "winningProposal()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -58,7 +59,6 @@ export interface VotingDappInterface extends utils.Interface {
     functionFragment: "getCandidate",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "getResult", values?: undefined): string;
   encodeFunctionData(functionFragment: "manager", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "startElection",
@@ -74,6 +74,14 @@ export interface VotingDappInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "vote", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "winner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "winnerName",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "winningProposal",
+    values?: undefined
+  ): string;
 
   decodeFunctionResult(functionFragment: "Candidates", data: BytesLike): Result;
   decodeFunctionResult(
@@ -96,7 +104,6 @@ export interface VotingDappInterface extends utils.Interface {
     functionFragment: "getCandidate",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getResult", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "manager", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "startElection",
@@ -109,6 +116,11 @@ export interface VotingDappInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "totalVotes", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "winner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "winnerName", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "winningProposal",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
@@ -144,10 +156,11 @@ export interface VotingDapp extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [string, BigNumber, BigNumber] & {
+      [string, BigNumber, BigNumber, BigNumber] & {
         candidateName: string;
         candidateAge: BigNumber;
         totalVotes: BigNumber;
+        index: BigNumber;
       }
     >;
 
@@ -175,10 +188,6 @@ export interface VotingDapp extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string, BigNumber] & { _name: string; _age: BigNumber }>;
 
-    getResult(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     manager(overrides?: CallOverrides): Promise<[string]>;
 
     startElection(
@@ -195,16 +204,25 @@ export interface VotingDapp extends BaseContract {
     ): Promise<ContractTransaction>;
 
     winner(overrides?: CallOverrides): Promise<[string]>;
+
+    winnerName(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    winningProposal(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { winningProposal_: BigNumber }>;
   };
 
   Candidates(
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [string, BigNumber, BigNumber] & {
+    [string, BigNumber, BigNumber, BigNumber] & {
       candidateName: string;
       candidateAge: BigNumber;
       totalVotes: BigNumber;
+      index: BigNumber;
     }
   >;
 
@@ -232,10 +250,6 @@ export interface VotingDapp extends BaseContract {
     overrides?: CallOverrides
   ): Promise<[string, BigNumber] & { _name: string; _age: BigNumber }>;
 
-  getResult(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   manager(overrides?: CallOverrides): Promise<string>;
 
   startElection(
@@ -253,15 +267,22 @@ export interface VotingDapp extends BaseContract {
 
   winner(overrides?: CallOverrides): Promise<string>;
 
+  winnerName(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  winningProposal(overrides?: CallOverrides): Promise<BigNumber>;
+
   callStatic: {
     Candidates(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [string, BigNumber, BigNumber] & {
+      [string, BigNumber, BigNumber, BigNumber] & {
         candidateName: string;
         candidateAge: BigNumber;
         totalVotes: BigNumber;
+        index: BigNumber;
       }
     >;
 
@@ -287,12 +308,6 @@ export interface VotingDapp extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string, BigNumber] & { _name: string; _age: BigNumber }>;
 
-    getResult(
-      overrides?: CallOverrides
-    ): Promise<
-      [string, BigNumber] & { _candidateName: string; _totalVotes: BigNumber }
-    >;
-
     manager(overrides?: CallOverrides): Promise<string>;
 
     startElection(overrides?: CallOverrides): Promise<void>;
@@ -304,6 +319,10 @@ export interface VotingDapp extends BaseContract {
     vote(_index: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     winner(overrides?: CallOverrides): Promise<string>;
+
+    winnerName(overrides?: CallOverrides): Promise<void>;
+
+    winningProposal(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   filters: {};
@@ -336,10 +355,6 @@ export interface VotingDapp extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getResult(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     manager(overrides?: CallOverrides): Promise<BigNumber>;
 
     startElection(
@@ -356,6 +371,12 @@ export interface VotingDapp extends BaseContract {
     ): Promise<BigNumber>;
 
     winner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    winnerName(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    winningProposal(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -386,10 +407,6 @@ export interface VotingDapp extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getResult(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     manager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     startElection(
@@ -406,5 +423,11 @@ export interface VotingDapp extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     winner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    winnerName(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    winningProposal(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }
