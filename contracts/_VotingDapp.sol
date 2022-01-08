@@ -7,11 +7,13 @@ contract VotingDapp {
     bool public electionStarted=false;
     address public manager;
     string public winner;
+    uint256 initialIndex;
 
     struct Candidate {
         string candidateName;
         uint256 candidateAge;
         uint256 totalVotes;
+        uint256 index;
     }
 
     Candidate[] public Candidates;
@@ -39,6 +41,7 @@ contract VotingDapp {
         totalCandidates = 0;
         totalVotes = 0;
         delete Candidates;
+        initialIndex=0;
     }
 
     function becomeCandidate(string calldata _name, uint256 _age) external {
@@ -46,9 +49,11 @@ contract VotingDapp {
         Candidates.push(Candidate({
             candidateName: _name,
             candidateAge: _age,
-            totalVotes: 0
+            totalVotes: 0,
+            index:initialIndex
         }));
         totalCandidates = totalCandidates + 1;
+        initialIndex = initialIndex + 1;
     }
     function getCandidate(uint256 _index) view external returns(string memory _name,uint256 _age){
         Candidate storage candidate = Candidates[_index];
@@ -67,19 +72,16 @@ contract VotingDapp {
         return (candidate.candidateName,candidate.totalVotes);
     }
 
-    function getResult() external returns(string memory _candidateName,uint256 _totalVotes){
-        // get winner of the election. The election should not be active. Anyone can see the result.
-        uint256 i=0;
-        uint256 leader=0;
-        uint256 leaderIndex=0;
-        for (i=0; i<=totalCandidates; i++){
-            if(Candidates[i].totalVotes >=leader){
-            leader = Candidates[i].totalVotes;
-            leaderIndex = i;
+   function winningProposal() public view returns (uint winningProposal_) {
+        uint winningVoteCount = 0;
+        for (uint p = 0; p < totalCandidates; p++) {
+            if (Candidates[p].totalVotes > winningVoteCount) {
+                winningVoteCount = Candidates[p].totalVotes;
+                winningProposal_ = p;
             }
         }
-        Candidate storage candidate = Candidates[leaderIndex];
-        winner = candidate.candidateName;
-        return (candidate.candidateName,candidate.totalVotes);
+    }
+     function winnerName() public {
+        winner= Candidates[winningProposal()].candidateName;
     }
 }
