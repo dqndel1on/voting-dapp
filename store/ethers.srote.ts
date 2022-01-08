@@ -12,7 +12,7 @@ type EthersType = {
 }
 
 const useEthers = create<EthersType>((set, get) => ({
-    contractAddress: '0xEBeE87b4DC64905E89F7Dc63645b7a3B9186beE8',
+    contractAddress: '0xf763B266dDa6df79594D81F9b93a234d8D3b6eac',
     accounts: [''],
     setAccounts: (data) => set({ accounts: data }),
     requestAccounts: async () => {
