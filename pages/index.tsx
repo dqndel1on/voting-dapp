@@ -3,14 +3,20 @@ import Head from 'next/head';
 import React from 'react';
 import useVotingDapp from '../store/contract.store';
 import useEthers from '../store/ethers.srote';
+import { BiError } from 'react-icons/bi';
 
-const VoteCard = ({ children }) => {
+declare let window: any;
+
+const VoteCard = ({ children, _index }) => {
+  const { vote } = useVotingDapp();
   return (
     <div>
       <div className="mt-5 flex justify-center items-center uppercase bg-white text-black rounded-md h-52 w-52">
         {children}
       </div>
-      <button className="mt-5 bg-red-400 uppercase rounded-md px-4 py-1 w-full">
+      <button
+        onClick={() => vote(_index)}
+        className="mt-5 bg-red-400 uppercase rounded-md px-4 py-1 w-full">
         Vote for {children}
       </button>
     </div>
@@ -23,32 +29,57 @@ const Home: NextPage = () => {
   const { requestAccounts, accounts, checkMMConnection } = useEthers();
   const {
     getInitialData,
-    totalVotes,
     totalCandidates,
     winner,
     manager,
     electionStarted,
     getCandidates,
+    becomeCandidate,
+    candidates,
+    startElection,
+    endElection,
+    getResult,
   } = useVotingDapp();
 
   const handleConnectWallet = () => {
     void requestAccounts();
   };
+
+  const handleBecomeCandidate = () => {
+    void becomeCandidate({ _name: candidateName, _age: Number(candidateAge) });
+  };
+
+  const handleStartElection = () => {
+    void startElection();
+  };
+  const handleEndElection = () => {
+    void endElection();
+  };
+  const handleGetResult = () => {
+    void getResult();
+  };
+
   React.useEffect(() => {
     void checkMMConnection();
     void getInitialData();
   }, []);
 
-  console.log(totalVotes, totalCandidates, winner, manager, electionStarted);
-
   React.useEffect(() => {
     if (totalCandidates > 0) {
       let i = 0;
       for (i = 0; i <= totalCandidates; i++) {
-        getCandidates(i);
+        void getCandidates(i);
       }
     }
-  }, []);
+  }, [totalCandidates]);
+  React.useEffect(() => {
+    if (typeof window.ethereum !== undefined) {
+      window.ethereum.on('accountsChanged', () => {
+        void requestAccounts();
+      });
+    }
+  }, [accounts]);
+
   return (
     <div className="bg-gradient-to-t from-darkGrey to-lightGrey text-white py-16">
       <Head>
@@ -57,9 +88,42 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="max-w-7xl w-full grid grid-cols-2 mx-auto">
+      <main className="max-w-7xl w-full grid grid-cols-1 md:grid-cols-2 min-h-screen mx-auto">
         <div className="flex flex-col px-10">
-          <h1 className="text-5xl uppercase font-black text-center">Add Candidate</h1>
+          <h1 className="text-5xl uppercase font-black text-center">ELECTION DETAILS</h1>
+          <span className="bg-green-500 p-2">Previous Winner: {winner}</span>
+          <div className="mt-5">
+            {electionStarted ? (
+              <span className="bg-green-500 p-2  flex items-center">Election Started</span>
+            ) : (
+              <span className="bg-red-400 p-2 flex items-center">
+                <BiError /> Election Not Started
+              </span>
+            )}
+          </div>
+          <div className="flex justify-between items-center mt-10">
+            {!electionStarted && (
+              <button onClick={handleStartElection} className="bg-pink-600 p-2 rounded-lg">
+                Start Election
+              </button>
+            )}
+            {electionStarted && (
+              <button onClick={handleEndElection} className="bg-pink-600 p-2 rounded-lg">
+                End Election
+              </button>
+            )}
+          </div>
+          <div className="mt-5">
+            {manager !== '0x0000000000000000000000000000000000000000' && (
+              <span className="bg-blue-400 p-2">Manager: {manager}</span>
+            )}
+          </div>
+          <div>
+            <button onClick={handleGetResult} className="bg-pink-600 p-2 rounded-lg mt-5">
+              Get Result
+            </button>
+          </div>
+          <h1 className="text-5xl uppercase font-black text-center mt-20">Add Candidate</h1>
           <div className="flex mt-5 items-center justify-between w-full">
             <label className="w-1/4">Candidate Name:</label>
             <input
@@ -77,7 +141,9 @@ const Home: NextPage = () => {
               className="w-96 text-black h-14 p-4 rounded-lg"
             />
           </div>
-          <button className="p-2 bg-pink-600 rounded-lg mt-5 w-32">Add Candidate</button>
+          <button onClick={handleBecomeCandidate} className="p-2 bg-pink-600 rounded-lg mt-5 w-32">
+            Add Candidate
+          </button>
         </div>
         <div>
           <div className="flex items-center">
@@ -88,10 +154,13 @@ const Home: NextPage = () => {
           </div>
           <h1 className="text-5xl uppercase font-black text-center mt-10">Pick your favourite.</h1>
           <section className="flex justify-between flex-wrap mt-20">
-            <VoteCard>Apple</VoteCard>
-            <VoteCard>Ball</VoteCard>
-            <VoteCard>Cat</VoteCard>
-            <VoteCard>Cat</VoteCard>
+            {candidates.map((candidate, i) => {
+              return (
+                <VoteCard key={i} _index={i}>
+                  {candidate[0]}
+                </VoteCard>
+              );
+            })}
           </section>
         </div>
       </main>
